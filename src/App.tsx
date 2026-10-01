@@ -1,175 +1,140 @@
 import { useState } from 'react';
-import { Header } from './components/Header';
-import { PromoBanner } from './components/PromoBanner';
-import { CategoryGrid } from './components/CategoryGrid';
-import { LoyaltyCard } from './components/LoyaltyCard';
-import { ProductSection, products, type Product } from './components/ProductSection';
-import { BottomNav, type NavTab } from './components/BottomNav';
-import { CartDrawer, type CartItem } from './components/CartDrawer';
+import { Calendar, UserPlus, UserCheck, Database, HeartPulse, Sparkles } from 'lucide-react';
+import { PatientRegistration } from './components/PatientRegistration';
+import { AppointmentScheduler } from './components/AppointmentScheduler';
+import { NutritionistDashboard } from './components/NutritionistDashboard';
+import { DatabaseSchemaView } from './components/DatabaseSchemaView';
+import type { UserRole } from './types';
+
+type TabView = 'agendamento' | 'cadastro' | 'nutricionista' | 'arquitetura';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { product: products[0], quantity: 1 },
-    { product: products[1], quantity: 1 },
-  ]);
-
-  const handleAddToCart = (product: Product) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-  };
-
-  const handleUpdateQuantity = (productId: string, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const handleClearCart = () => {
-    setCartItems([]);
-  };
-
-  const totalCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const [activeTab, setActiveTab] = useState<TabView>('agendamento');
+  const [activeRole, setActiveRole] = useState<UserRole>('paciente');
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] flex justify-center selection:bg-amber-500 selection:text-stone-950">
-      {/* Mobile Frame Container */}
-      <div className="w-full max-w-md bg-[#121212] min-h-screen pb-24 shadow-2xl relative flex flex-col">
-        {/* Top Header */}
-        <Header
-          cartCount={totalCartCount}
-          onOpenCart={() => setIsCartOpen(true)}
-          onOpenProfile={() => setActiveTab('profile')}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-        />
+    <div className="min-h-screen bg-[#0d0d0d] text-stone-100 flex flex-col items-center selection:bg-amber-500 selection:text-stone-950">
+      {/* Top Banner Header */}
+      <header className="w-full bg-[#121212] border-b border-stone-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-stone-950 shadow-lg shadow-amber-500/20">
+              <HeartPulse className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div>
+              <h1 className="text-base font-extrabold text-white flex items-center gap-1.5 leading-tight">
+                NutriAgenda <Sparkles className="w-4 h-4 text-amber-500" />
+              </h1>
+              <p className="text-[11px] text-stone-400 font-medium">Sistema de Agendamento de Consultas</p>
+            </div>
+          </div>
 
-        {/* Dynamic Content Views */}
-        <main className="flex-1">
-          {activeTab === 'home' && (
+          {/* Role Switcher Pill */}
+          <div className="flex bg-[#1c1c1e] p-1 rounded-xl border border-stone-800 text-xs">
+            <button
+              onClick={() => {
+                setActiveRole('paciente');
+                if (activeTab === 'nutricionista') setActiveTab('agendamento');
+              }}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                activeRole === 'paciente'
+                  ? 'bg-amber-500 text-stone-950 shadow-md'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              Paciente
+            </button>
+            <button
+              onClick={() => {
+                setActiveRole('nutricionista');
+                setActiveTab('nutricionista');
+              }}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                activeRole === 'nutricionista'
+                  ? 'bg-amber-500 text-stone-950 shadow-md'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              Nutricionista
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <nav className="max-w-4xl mx-auto px-4 flex gap-2 border-t border-stone-800/60 pt-2 pb-2 overflow-x-auto">
+          {activeRole === 'paciente' && (
             <>
-              {/* Promo Combo Banner */}
-              <PromoBanner
-                onOrderNow={() => {
-                  handleAddToCart({
-                    id: 'combo-dia',
-                    name: 'Combo Smash Cheddar Duplo',
-                    tag: 'Combo do Dia',
-                    description: 'Duplo smash 90g + Fritas Rústicas + Refri',
-                    price: 38.90,
-                    imageUrl:
-                      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
-                  });
-                  setIsCartOpen(true);
-                }}
-              />
+              <button
+                onClick={() => setActiveTab('agendamento')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'agendamento'
+                    ? 'bg-stone-800 text-amber-400 border border-amber-500/30'
+                    : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/40'
+                }`}
+              >
+                <Calendar className="w-4 h-4" /> Agendamento
+              </button>
 
-              {/* Quick Action Category Grid */}
-              <CategoryGrid
-                onSelectCategory={(catId) => {
-                  if (catId === 'menu') setActiveTab('menu');
-                  if (catId === 'loyalty') setActiveTab('loyalty');
-                  if (catId === 'orders' || catId === 'account') setIsCartOpen(true);
-                }}
-              />
-
-              {/* Loyalty Program Progress */}
-              <LoyaltyCard currentPts={320} maxPts={400} />
-
-              {/* Popular Products Carousel */}
-              <ProductSection
-                onAddToCart={(prod) => {
-                  handleAddToCart(prod);
-                }}
-                onViewAll={() => setActiveTab('menu')}
-              />
+              <button
+                onClick={() => setActiveTab('cadastro')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'cadastro'
+                    ? 'bg-stone-800 text-amber-400 border border-amber-500/30'
+                    : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/40'
+                }`}
+              >
+                <UserPlus className="w-4 h-4" /> Cadastro de Paciente
+              </button>
             </>
           )}
 
-          {activeTab === 'menu' && (
-            <div className="px-4 py-4 text-white">
-              <h2 className="text-xl font-extrabold mb-4">Nosso Cardápio</h2>
-              <div className="grid grid-cols-1 gap-4">
-                {products.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between bg-[#1c1c1e] p-3 rounded-2xl border border-stone-800"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={p.imageUrl}
-                        alt={p.name}
-                        className="w-16 h-16 object-cover rounded-xl"
-                      />
-                      <div>
-                        <h3 className="font-bold text-sm text-white">{p.name}</h3>
-                        <p className="text-stone-400 text-xs line-clamp-1">{p.description}</p>
-                        <p className="text-amber-500 font-black text-sm mt-1">
-                          R$ {p.price.toFixed(2).replace('.', ',')}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleAddToCart(p)}
-                      className="bg-amber-500 text-stone-950 font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-amber-400 transition-colors"
-                    >
-                      + Add
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {activeRole === 'nutricionista' && (
+            <button
+              onClick={() => setActiveTab('nutricionista')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                activeTab === 'nutricionista'
+                  ? 'bg-stone-800 text-amber-400 border border-amber-500/30'
+                  : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/40'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" /> Painel & Bloqueio de Horários
+            </button>
           )}
 
-          {activeTab === 'loyalty' && (
-            <div className="px-4 py-4 text-white">
-              <h2 className="text-xl font-extrabold mb-4">Programa de Fidelidade</h2>
-              <LoyaltyCard currentPts={320} maxPts={400} />
-            </div>
-          )}
+          <button
+            onClick={() => setActiveTab('arquitetura')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+              activeTab === 'arquitetura'
+                ? 'bg-stone-800 text-amber-400 border border-amber-500/30'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/40'
+            }`}
+          >
+            <Database className="w-4 h-4" /> Banco de Dados & Tech
+          </button>
+        </nav>
+      </header>
 
-          {activeTab === 'profile' && (
-            <div className="px-4 py-6 text-white text-center">
-              <div className="w-20 h-20 bg-[#f3ab51] text-stone-950 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-3 shadow-lg">
-                M
-              </div>
-              <h2 className="text-xl font-extrabold">Matheus Silva</h2>
-              <p className="text-stone-400 text-sm">matheus@burgercraft.com</p>
-            </div>
-          )}
-        </main>
+      {/* Main Body Area */}
+      <main className="w-full max-w-4xl px-4 py-6 flex-1">
+        {activeTab === 'agendamento' && <AppointmentScheduler />}
 
-        {/* Fixed Bottom Navigation */}
-        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+        {activeTab === 'cadastro' && (
+          <PatientRegistration
+            onSuccess={() => {
+              setActiveTab('agendamento');
+            }}
+          />
+        )}
 
-        {/* Cart Side Drawer */}
-        <CartDrawer
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onClearCart={handleClearCart}
-        />
-      </div>
+        {activeTab === 'nutricionista' && <NutritionistDashboard />}
+
+        {activeTab === 'arquitetura' && <DatabaseSchemaView />}
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full bg-[#121212] border-t border-stone-800 py-4 text-center text-xs text-stone-500">
+        <p>Sistema de Agendamento Nutricional • React + Node.js + MySQL</p>
+      </footer>
     </div>
   );
 }
